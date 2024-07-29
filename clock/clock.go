@@ -10,29 +10,20 @@ type Clock struct {
 }
 
 const (
-	HOUR_IN_MINS int = 60
-	DAY_IN_HOURS int = 24
+	hourInMinutes int = 60
+	dayInHours    int = 24
 )
 
 func normalize(c Clock) Clock {
-	h := c.hour % DAY_IN_HOURS
-	if h < 0 {
-		h = DAY_IN_HOURS + h
-	}
+	h := (c.hour + (c.minute / hourInMinutes)) % dayInHours
+	m := c.minute % hourInMinutes
 
-	m := c.minute % HOUR_IN_MINS
 	if m < 0 {
-		m = HOUR_IN_MINS + m
+		m += hourInMinutes
+		h -= 1
 	}
-
-	hourDiff := int((c.minute - m) / 60) // natural digit from -Inf to +Inf
-	// representing the diff that minutes create in hours
-
-	h += int(hourDiff) // calculate the final value of the hour
-	h %= DAY_IN_HOURS
-	
 	if h < 0 {
-		return normalize(Clock{h, m})
+		h += dayInHours
 	}
 
 	return Clock{h, m}
@@ -55,31 +46,9 @@ func (c Clock) Add(m int) Clock {
 }
 
 func (c Clock) Subtract(m int) Clock {
-	newHours := c.hour
-	newMinutes := c.minute - m
-
-	return normalize(Clock{hour: newHours, minute: newMinutes})
+	return c.Add(-m)
 }
 
 func (c Clock) String() string {
-	c = normalize(c)
-	h, m := c.hour, c.minute
-
-	str := ""
-
-	if h > 9 {
-		str += fmt.Sprintf("%d", h)
-	} else {
-		str += fmt.Sprintf("0%d", h)
-	}
-
-	str += ":"
-
-	if m > 9 {
-		str += fmt.Sprintf("%d", m)
-	} else {
-		str += fmt.Sprintf("0%d", m)
-	}
-
-	return str
+	return fmt.Sprintf("%02d:%02d", c.hour, c.minute)
 }
